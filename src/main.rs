@@ -145,8 +145,8 @@ fn generate_snacks(snake: &VecDeque<Cell>) -> VecDeque<Cell> {
     let mut snacks = VecDeque::with_capacity(snacks_dropped as usize);
     for _ in 0..snacks.capacity() {
         let snack_location = Cell {
-            x: rand::random::<u8>() % ROWS,
-            y: rand::random::<u8>() % COLUMNS,
+            x: random::<u8>() % ROWS,
+            y: random::<u8>() % COLUMNS,
         };
         if !snake.contains(&snack_location) {
             snacks.push_front(snack_location);
