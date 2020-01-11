@@ -8,4 +8,5 @@ You already know how to play 😎
 ## Technical issues
 
 You might have to press an arrow key multiple times to make it work.
+You can use WASD to turn accurately.
 Sorry for the inconvenience, I'm working on fixing the issue.

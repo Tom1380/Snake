@@ -90,6 +90,10 @@ impl Cell {
 fn read_arrow(g: &Getch) -> Option<Direction> {
     use Direction::*;
     match g.getch() {
+        Ok(87) | Ok(119) => Some(Up),
+        Ok(68) | Ok(100) => Some(Right),
+        Ok(83) | Ok(115) => Some(Down),
+        Ok(65) | Ok(97) => Some(Left),
         Ok(27) => match g.getch() {
             Ok(91) => match g.getch() {
                 Ok(65) => Some(Up),
@@ -174,11 +178,7 @@ fn listen_for_keys(tx: Sender<Direction>) {
 }
 
 fn render_grid(rx: Receiver<Direction>) {
-    let mut snake = vec![
-        Cell { x: 0, y: 0 },
-    ]
-    .into_iter()
-    .collect();
+    let mut snake = vec![Cell { x: 0, y: 0 }].into_iter().collect();
     let mut snacks = generate_snacks(&snake);
     let mut direction = rx.recv().unwrap();
     loop {
@@ -188,7 +188,7 @@ fn render_grid(rx: Receiver<Direction>) {
         if let Ok(new_direction) = rx.try_recv() {
             direction = new_direction;
         }
-        let new_head = snake.iter().last().unwrap().neighbour(&direction, );
+        let new_head = snake.iter().last().unwrap().neighbour(&direction);
         if snake.contains(&new_head) {
             game_over();
         } else if let Some(i) = snacks.iter().position(|cell| *cell == new_head) {
