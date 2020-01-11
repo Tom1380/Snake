@@ -135,7 +135,7 @@ fn clear_screen() {
 }
 
 fn game_over() {
-    println!("{}", "YOU LOST".color("red"));
+    println!("{}", "YOU LOST.".color("red"));
     exit(0);
 }
 
