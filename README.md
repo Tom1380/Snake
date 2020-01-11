@@ -1,5 +1,7 @@
 # Snake
 
+![Demo](snake.gif)
+
 The game which can single-handedly make anyone nostalgic in a couple of seconds.
 You already know how to play 😎
 
