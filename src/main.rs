@@ -9,7 +9,6 @@ use {
         thread::{sleep, spawn},
         time::Duration,
     },
-    termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor},
 };
 
 const ROWS: u8 = 20;
@@ -88,39 +87,22 @@ impl Cell {
 }
 
 struct OutputBuffer {
-    buffer: Vec<(String, Option<Color>)>,
-    stdout: StandardStream,
+    buffer: String,
 }
 
 impl OutputBuffer {
     fn with_capacity(capacity: usize) -> OutputBuffer {
         OutputBuffer {
-            buffer: Vec::with_capacity(capacity),
-            stdout: StandardStream::stdout(ColorChoice::Always),
+            buffer: String::with_capacity(capacity),
         }
     }
 
-    fn append(&mut self, tup: &(String, Option<Color>)) {
-        let len = self.buffer.len();
-        if len == 0 {
-            self.buffer.push((tup.0.clone(), (tup.1)));
-            return;
-        }
-        let last = &mut self.buffer[len - 1];
-        if (tup.1) == last.1 {
-            last.0 += &tup.0;
-        } else {
-            self.buffer.push((tup.0.clone(), (tup.1)));
-        }
+    fn append(&mut self, s: &str) {
+        self.buffer.push_str(&s);
     }
 
     fn flush(&mut self) {
-        for (s, color) in &self.buffer {
-            self.stdout
-                .set_color(ColorSpec::new().set_fg(*color))
-                .unwrap();
-            write!(&mut self.stdout, "{}", s);
-        }
+        print!("{}", &self.buffer);
         self.buffer.clear();
     }
 }
@@ -147,38 +129,31 @@ fn read_arrow(g: &Getch) -> Option<Direction> {
 }
 
 fn print_grid(snake: &VecDeque<Cell>, snacks: &VecDeque<Cell>, op: &mut OutputBuffer) {
-    let colored_fs_char = (String::from("|"), Some(Color::Blue));
-    let snake_char = (String::from("+"), Some(Color::Green));
-    let snack_char = (String::from("O"), Some(Color::Yellow));
     for y in 0..ROWS {
         for x in 0..COLUMNS {
             if snake.contains(&Cell { x, y }) {
-                op.append(&colored_fs_char);
-                op.append(&snake_char);
+                op.append("|+")
             } else if snacks.contains(&Cell { x, y }) {
-                op.append(&colored_fs_char);
-                op.append(&snack_char);
+                op.append("|O");
             } else {
-                op.append(&(String::from("|_"), Some(Color::Blue)));
+                op.append("|_");
             }
         }
-        op.append(&(String::from("|\n"), Some(Color::Blue)));
+        op.append("|\n");
     }
-    op.append(&(String::from("Score: "), Some(Color::White)));
-    op.append(&((snake.len() - 1).to_string() + &"\n", Some(Color::Yellow))); //.color("yellow"));
+    op.append(format!("Score: {}\n", snake.len() - 1).as_str());
 }
 
 fn clear_screen(op: &mut OutputBuffer) {
     if cfg!(target_os = "windows") {
-        op.append(&("\n".repeat(30), None));
-    }
-    else {
-        op.append(&(String::from("\x1b[2J\x1b[1;1H"), None));
+        op.append(&"\n".repeat(30));
+    } else {
+        op.append("\x1b[2J\x1b[1;1H");
     }
 }
 
 fn game_over(op: &mut OutputBuffer) {
-    op.append(&(String::from("YOU LOST.\n"), Some(Color::Red))); //.color("red"));
+    op.append("YOU LOST.\n"); //.color("red"));
     op.flush();
     exit(0);
 }
