@@ -1,15 +1,18 @@
+
 use {
-    dialoguer::{theme::ColorfulTheme, Confirmation, Input, PasswordInput, Select},
+    dialoguer::{theme::ColorfulTheme, Input, PasswordInput, Select},
     getch::*,
     rand::random,
+    fs::{File},
     std::{
-        collections::VecDeque,
-        io::Write,
+        fs,
+        collections::{VecDeque, HashMap},
         process::exit,
         sync::mpsc::{channel, Receiver, Sender},
         thread::{sleep, spawn},
         time::Duration,
     },
+    serde_json
 };
 
 const ROWS: u8 = 20;
@@ -223,7 +226,7 @@ fn render_grid(rx: Receiver<Direction>) {
     }
 }
 
-#[derive(Debug)]
+#[derive( Debug, Clone)]
 struct User {
     username: String,
     password: String,
@@ -231,37 +234,41 @@ struct User {
 
 enum Acces {
     Granted,
-    denied,
+    Denied,
 }
-
-fn login() -> Acces {
+// mut config: &HashMap<String,String>
+fn login(mut config : HashMap<String, String>) -> (Acces,User) {
     let username: String = Input::new().with_prompt("Username").interact().unwrap();
-    let password = PasswordInput::with_theme(&ColorfulTheme::default())
+    let password: String = PasswordInput::with_theme(&ColorfulTheme::default())
         .with_prompt("Password")
         .interact()
         .unwrap();
-
-    let user = User { username, password };
-    println!("{:?}", user);
-    Acces::Granted
+    
+    config.insert("username".to_string(), username.to_owned());
+    config.insert("password".to_string(), password.to_owned());
+    serde_json::to_writer(&File::create("config.json").unwrap(), &config).unwrap();
+    let user = User{username,password};
+    (Acces::Granted,user)
 }
-fn signup() -> Acces {
+fn signup() -> (Acces,User) {
+    let mut config: HashMap<String, String> = HashMap::new();
     let username: String = Input::new().with_prompt("Username").interact().unwrap();
     let password = PasswordInput::with_theme(&ColorfulTheme::default())
         .with_prompt("Password")
         .with_confirmation("Repeat password", "Error: the passwords don't match.")
         .interact()
         .unwrap();
-
+    config.insert("username".to_string(), username.to_owned());
+    config.insert("password".to_string(), password.to_owned());
     let user = User { username, password };
-    println!("{:?}", user);
-    Acces::Granted
+    serde_json::to_writer(&File::create("config.json").unwrap(), &config).unwrap();
+    (Acces::Granted,user)
 }
-fn main_menu(tx: std::sync::mpsc::Sender<Direction>, rx: std::sync::mpsc::Receiver<Direction>) {
+fn main_menu(tx: std::sync::mpsc::Sender<Direction>, rx: std::sync::mpsc::Receiver<Direction>,user:User) {
     println!("\x1b[2J\x1b[1;1H");
     let selections = &["Play", "Settings", "Scores"];
 
-    let selection = Select::with_theme(&ColorfulTheme::default())
+    let selection = Select::with_theme(&ColorfulTheme::default()).with_prompt(format!("Ciao, {}", user.username).as_str())
         .default(0)
         .items(&selections[..])
         .interact_opt()
@@ -285,32 +292,60 @@ fn main_menu(tx: std::sync::mpsc::Sender<Direction>, rx: std::sync::mpsc::Receiv
         println!("Non hai selezionato nulla");
     }
 }
+
+fn read_config() -> serde_json::value::Value {
+    let file = fs::File::open("config.json").expect("file should open read only");
+    serde_json::from_reader(file).expect("file should be proper JSON")
+}
+fn hashmapper(data: serde_json::value::Value) -> HashMap<String, String> {
+    data.as_object()
+        .unwrap()
+        .iter()
+        .map(|(key, value)| {
+            (key.clone(), value.as_str().unwrap().to_string(),)
+        })
+        .collect()
+}
 fn main() {
+    let config = read_config() ;
     let (tx, rx) = channel();
     // if first Acces or without account this screen will show up
     let selections = &["Log-in", "Sign-up"];
-    let selection = Select::with_theme(&ColorfulTheme::default())
+
+    let hashmap = hashmapper(config);
+    if !hashmap.contains_key("username") && !hashmap.contains_key("password") {
+            let selection = Select::with_theme(&ColorfulTheme::default())
         .default(0)
         .items(&selections[..])
         .interact_opt()
         .unwrap();
-    if let Some(selection) = selection {
-        match selections[selection] {
-            "Log-in" => match login() {
-                Acces::Granted => {
-                    main_menu(tx, rx);
-                }
-                _ => unimplemented!(),
-            },
-            "Sign-up" => match signup() {
-                Acces::Granted => {
-                    main_menu(tx, rx);
-                }
-                _ => unimplemented!(),
-            },
-            _ => unreachable!(),
+        if let Some(selection) = selection {
+            match selections[selection] {
+                "Log-in" => match login( hashmap) {
+                    (Acces::Granted,user) => {
+                        main_menu(tx, rx,user);
+                    }
+                    _ => unimplemented!(),
+                },
+                "Sign-up" => match signup() {
+                    (Acces::Granted, user) => {
+                        main_menu(tx, rx,user);
+                    }
+                    _ => unimplemented!(),
+                },
+                _ => unreachable!(),
+            }
+        } else {
+            println!("Non hai selezionato nulla");
         }
-    } else {
-        println!("Non hai selezionato nulla");
+    } 
+    else {
+        let user = User{
+            username : hashmap.get("username").unwrap().to_string(),
+            password : hashmap.get("password").unwrap().to_string()
+        };
+        main_menu(tx, rx,user);
     }
+
+    
 }
