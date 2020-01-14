@@ -1,4 +1,5 @@
 use {
+    dialoguer::{theme::ColorfulTheme, Confirmation, Input, PasswordInput, Select},
     getch::*,
     rand::random,
     std::{
@@ -222,8 +223,94 @@ fn render_grid(rx: Receiver<Direction>) {
     }
 }
 
+#[derive(Debug)]
+struct User {
+    username: String,
+    password: String,
+}
+
+enum Acces {
+    Granted,
+    denied,
+}
+
+fn login() -> Acces {
+    let username: String = Input::new().with_prompt("Username").interact().unwrap();
+    let password = PasswordInput::with_theme(&ColorfulTheme::default())
+        .with_prompt("Password")
+        .interact()
+        .unwrap();
+
+    let user = User { username, password };
+    println!("{:?}", user);
+    Acces::Granted
+}
+fn signup() -> Acces {
+    let username: String = Input::new().with_prompt("Username").interact().unwrap();
+    let password = PasswordInput::with_theme(&ColorfulTheme::default())
+        .with_prompt("Password")
+        .with_confirmation("Repeat password", "Error: the passwords don't match.")
+        .interact()
+        .unwrap();
+
+    let user = User { username, password };
+    println!("{:?}", user);
+    Acces::Granted
+}
+fn main_menu(tx: std::sync::mpsc::Sender<Direction>, rx: std::sync::mpsc::Receiver<Direction>) {
+    println!("\x1b[2J\x1b[1;1H");
+    let selections = &["Play", "Settings", "Scores"];
+
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .default(0)
+        .items(&selections[..])
+        .interact_opt()
+        .unwrap();
+
+    if let Some(selection) = selection {
+        match selections[selection] {
+            "Play" => {
+                spawn(move || listen_for_keys(tx));
+                render_grid(rx);
+            }
+            "Settings" => {
+                unimplemented!();
+            }
+            "Scores" => {
+                unimplemented!()
+            }
+            _ => unreachable!(),
+        }
+    } else {
+        println!("Non hai selezionato nulla");
+    }
+}
 fn main() {
     let (tx, rx) = channel();
-    spawn(move || listen_for_keys(tx));
-    render_grid(rx);
+    // if first Acces or without account this screen will show up
+    let selections = &["Log-in", "Sign-up"];
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .default(0)
+        .items(&selections[..])
+        .interact_opt()
+        .unwrap();
+    if let Some(selection) = selection {
+        match selections[selection] {
+            "Log-in" => match login() {
+                Acces::Granted => {
+                    main_menu(tx, rx);
+                }
+                _ => unimplemented!(),
+            },
+            "Sign-up" => match signup() {
+                Acces::Granted => {
+                    main_menu(tx, rx);
+                }
+                _ => unimplemented!(),
+            },
+            _ => unreachable!(),
+        }
+    } else {
+        println!("Non hai selezionato nulla");
+    }
 }
