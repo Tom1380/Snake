@@ -1,6 +1,7 @@
 
 use {
     dialoguer::{theme::ColorfulTheme, Input, PasswordInput, Select},
+    colored::*,
     getch::*,
     rand::random,
     fs::{File},
@@ -133,19 +134,46 @@ fn read_arrow(g: &Getch) -> Option<Direction> {
 }
 
 fn print_grid(snake: &VecDeque<Cell>, snacks: &VecDeque<Cell>, op: &mut OutputBuffer) {
-    for y in 0..ROWS {
-        for x in 0..COLUMNS {
-            if snake.contains(&Cell { x, y }) {
-                op.append("|+")
-            } else if snacks.contains(&Cell { x, y }) {
-                op.append("|O");
-            } else {
-                op.append("|_");
+    if cfg!(target_os = "windows") {
+
+        for y in 0..ROWS {
+            for x in 0..COLUMNS {
+                if snake.contains(&Cell { x, y }) {
+                    op.append("|+")
+                } else if snacks.contains(&Cell { x, y }) {
+                    op.append("|O");
+                } else {
+                    op.append("|_");
+                }
             }
+            op.append("|\n");
         }
-        op.append("|\n");
+        op.append(format!("Score: {}\n", snake.len() - 1).as_str());
+        
+        
+    } else {
+        let colored_fs_char = "|".color("blue");
+        let snake_char = "+".color("green");
+        let snack_char = "O".color("yellow");
+        let colored_underscore_char = "_".color("blue");
+        for y in 0..ROWS {
+            for x in 0..COLUMNS {
+                print!(
+                    "{}{}",
+                    colored_fs_char,
+                    if snake.contains(&Cell { x, y }) {
+                        &snake_char
+                    } else if snacks.contains(&Cell { x, y }) {
+                        &snack_char
+                    } else {
+                        &colored_underscore_char
+                    }
+                )
+            }
+            println!("{}", colored_fs_char);
+        }
+        println!("SCORE: {}", (snake.len() - 1).to_string().color("yellow"));
     }
-    op.append(format!("Score: {}\n", snake.len() - 1).as_str());
 }
 
 fn clear_screen(op: &mut OutputBuffer) {
