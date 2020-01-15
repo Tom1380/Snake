@@ -1,15 +1,8 @@
-CREATE TABLE match (
+CREATE TABLE scores (
 	username TEXT NOT NULL,
 	best_score_ever BIGINT NOT NULL,
-    score BIGINT NOT NULL,
+    difficulty INTEGER NOT NULL,
+    score INTEGER NOT NULL,
     numero_partita serial,
-    date TIMESTAMP NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
-CREATE TABLE users (
-	username TEXT NOT NULL,
-	best_score_ever BIGINT NOT NULL,
-    password bytea,
-    id serial NOT NULL
-);
-
