@@ -323,6 +323,9 @@ fn render_grid(rx: Receiver<Key>, difficulty: usize, config: &HashMap<String, se
         else {
             snake.pop_front();
         }
+        if snacks.is_empty() {
+            snacks = generate_snacks(&snake);
+        }
         snake.push_back(new_head);
     }
 }
