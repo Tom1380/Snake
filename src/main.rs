@@ -414,7 +414,7 @@ fn settings(config: &mut HashMap<String, serde_json::Value>) {
 
 fn scores(config: &HashMap<String, serde_json::Value>) {
     let client = reqwest::Client::new();
-    let difficulty = DIFFICULTIES[config["difficulty"].as_i64().unwrap() as usize];
+    let difficulty = config["difficulty"].as_i64().unwrap() as usize;
     let scores: serde_json::Value = client
         .get(&format!("http://167.172.50.64/scores/{}", difficulty))
         .send()
