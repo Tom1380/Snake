@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from flask import Flask, request, jsonify, send_from_directory
 import json
 import hashlib
@@ -11,61 +13,57 @@ app = Flask(__name__)
 def db_connection():
     while True:
         try:
-            conn = pg.connect('dbname=postgres host=localhost port=5000 user=postgres')
+            conn = pg.connect(
+                'dbname=postgres host=localhost port=6000 user=postgres')
             cur = conn.cursor()
             return conn, cur
         except:
             time.sleep(2)
             continue
 
+
 def hash_password(password):
     hasher = hashlib.sha256()
     hasher.update(str.encode(password))
     return hasher.digest()
 
-# USE GET TO CHECK IF A USER EXIST
-# @app.route('/credentials', methods=['GET'])
-# def check_credentials():
-#     content = request.headers
-#     if check_credentials(content):
-#         return jsonify({}), 200
-#     return jsonify({'message': 'Invalid username or password.'}), 400
-
-# USE POST TO ADD A NEW ACCOUT TO THE DATABASE
-# @app.route('/credentials', methods=['POST'])
-# def add_user():
-#     content = request.headers
-#     if check_credentials(content):
-#         return jsonify({}), 200
-#     return jsonify({'message': 'Invalid username or password.'}), 400
-
-# def check_credentials(content):
-#     try:
-#         username, password = content['username'], content['password']
-#     except:
-#         return False
-#     dbconn, cur = db_connection()
-#     hash = hash_password(password)
-#     cur.execute(
-#         "SELECT COUNT(*) FROM user_accounts WHERE username = %s AND hashed_password = %s",
-#         [username, hash])
-#     return cur.fetchone()[0] == 1
 
 @app.route('/', methods=['GET'])
 def download():
-    return send_from_directory("/", "snake.exe", as_attachment=True)
+    return send_from_directory("/", "snake.zip", as_attachment=True)
+
 
 @app.route('/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
-def upload_score():
+def upload_score(difficulty, username, score):
+    difficulty = int(difficulty)
+    assert 0 <= difficulty and difficulty <= 4
+    score = int(score)
+    assert 0 <= score
     conn, cur = db_connection()
-    cur.execute("INSERT INTO scores (difficulty, username, score) VALUES (%s, %s, %s)", [difficulty, username, score])
+    cur.execute("INSERT INTO scores (difficulty, username, score) VALUES (%s, %s, %s)", [
+                difficulty, username, score])
     conn.commit()
+    return ('', 204)
 
 
-@app.route('/scores', methods=['POST']):
-def scores():
+@app.route('/scores/<difficulty>', methods=['GET'])
+def scores(difficulty):
+    difficulty = int(difficulty)
+    assert 0 <= difficulty and difficulty <= 4
     conn, cur = db_connection()
-    cur.execute("SELECT score, username, data FROM scores ORDER BY score DESC LIMIT 10")
-    return json([{'score': row[0], 'username': row[1], 'data': row[2]} for row in cur.fetchall()])
+    cur.execute(
+        "SELECT score, username, date FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
+    return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 201
+
+@app.route('/absolute_and_personal_high_score/<difficulty>/<username>', methods=['GET'])
+def absolute_and_personal_high_score(difficulty, username):
+    difficulty = int(difficulty)
+    assert 0 <= difficulty and difficulty <= 4
+    conn, cur = db_connection()
+    cur.execute('SELECT MAX(score) FROM scores')
+    absolute = cur.fetchone()[0]
+    cur.execute('SELECT MAX(score) FROM scores WHERE username = %s', [username])
+    personal = cur.fetchone()[0]
+    return jsonify({'absolute': absolute, 'personal': personal}), 200
 
 app.run(debug=True, host='0.0.0.0', port=80, threaded=True)

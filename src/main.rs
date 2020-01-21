@@ -1,6 +1,9 @@
+mod game;
+mod scores;
+
 use {
-    colored::*,
-    dialoguer::{theme::ColorfulTheme, Input, PasswordInput, Select},
+    crate::scores::*,
+    dialoguer::{theme::ColorfulTheme, Input, Select},
     fs::File,
     getch::*,
     rand::random,
@@ -22,13 +25,13 @@ const CELLS: u16 = ROWS as u16 * COLUMNS as u16;
 const MAX_SNACKS_DROPPED: u16 = CELLS / 30; // How many snacks should be dropped at a time?
                                             // const SPEED: f32 = 0.08; // Seconds to cross a cell.
 const DIFFICULTIES: &'static [&'static str] = &[
-    "Mi faccio le 2006",
+    "Mi Faccio Le 2006",
     "Snitch",
     "Pick-Up Coach",
-    "Sono russo dentro",
+    "Sono Russo Dentro",
     "Iran 2020",
 ];
-const SPEEDS: &'static [f32] = &[0.3, 0.2, 0.1, 0.08, 0.05];
+const SPEEDS: &'static [f32] = &[0.2, 0.1, 0.08, 0.05, 0.03];
 
 #[derive(Debug, PartialEq)]
 enum Axis {
@@ -219,18 +222,30 @@ fn clear_screen() {
 fn game_over(op: &mut OutputBuffer, score: usize, config: &HashMap<String, serde_json::Value>) {
     op.append("HAI PERSO.\n"); //.color("red"));
     op.flush();
+    sleep(Duration::from_secs(2));
     let difficulty = config["difficulty"].as_i64().unwrap() as usize;
     let username = config["username"].as_str().unwrap();
     let client = reqwest::Client::new();
+    let (absolute, personal) = absolute_and_personal_high_score(&config);
+    if let Some(absolute) = absolute {
+        if score > absolute {
+            println!("Nuovo record in assoluto!");
+        } else if let Some(personal) = personal {
+            if score > personal {
+                println!("Nuovo record personale!");
+            }
+        }
+    }
     match client
         .post(&format!(
             "http://167.172.50.64/upload_score/{}/{}/{}",
             difficulty, username, score
         ))
         .send()
+        .map(|r| r.status())
     {
-        Ok(_) => println!("Punteggio salvato!"),
-        Err(_) => println!("A causa di un problema non ho potuto salvare il punteggio."),
+        Ok(reqwest::StatusCode::NO_CONTENT) => println!("Punteggio salvato!"),
+        _ => println!("A causa di un problema non ho potuto salvare il punteggio."),
     }
 }
 
@@ -306,6 +321,7 @@ fn render_grid(rx: Receiver<Key>, difficulty: usize, config: &HashMap<String, se
             None => {
                 game_over(&mut op, snake.len() - 1, &config);
                 println!("Premi invio per continuare.");
+                clear_receiver(&rx);
                 let _ = rx.recv();
                 clear_screen();
                 return;
@@ -313,11 +329,13 @@ fn render_grid(rx: Receiver<Key>, difficulty: usize, config: &HashMap<String, se
         };
         if snake.contains(&new_head) {
             game_over(&mut op, snake.len() - 1, &config);
+            println!("Premi invio per continuare.");
+            clear_receiver(&rx);
+            let _ = rx.recv();
+            clear_screen();
+            return;
         } else if let Some(i) = snacks.iter().position(|cell| *cell == new_head) {
             snacks.remove(i);
-            if snacks.is_empty() {
-                snacks = generate_snacks(&snake);
-            }
         }
         // If the game is lost or a snack was eaten, don't pop the oldest position.
         else {
@@ -330,44 +348,36 @@ fn render_grid(rx: Receiver<Key>, difficulty: usize, config: &HashMap<String, se
     }
 }
 
+fn clear_receiver(rx: &Receiver<Key>) {
+    while let Ok(_) = rx.try_recv() {}
+}
+
 #[derive(Debug, Clone)]
 struct User {
     username: String,
 }
 
-enum Access {
-    Granted,
-    Denied,
-}
 // mut config: &HashMap<String,String>
-fn login(config: &mut HashMap<String, serde_json::Value>) -> (Access, User) {
+fn login(config: &mut HashMap<String, serde_json::Value>) -> User {
     let username: String = Input::new().with_prompt("Username").interact().unwrap();
 
     config.insert("username".to_string(), json!(username.to_owned()));
     serde_json::to_writer(&File::create("config.json").unwrap(), &config).unwrap();
     let user = User { username };
-    (Access::Granted, user)
+    user
 }
-fn signup() -> (Access, User) {
-    let mut config: HashMap<String, String> = HashMap::new();
-    let username: String = Input::new().with_prompt("Username").interact().unwrap();
-    let password = PasswordInput::with_theme(&ColorfulTheme::default())
-        .with_prompt("Password")
-        .with_confirmation("Repeat password", "Error: the passwords don't match.")
-        .interact()
-        .unwrap();
-    config.insert("username".to_string(), username.to_owned());
-    config.insert("password".to_string(), password.to_owned());
-    let user = User { username };
-    serde_json::to_writer(&File::create("config.json").unwrap(), &config).unwrap();
-    (Access::Granted, user)
-}
+
 fn main_menu(user: User, mut config: HashMap<String, serde_json::Value>) {
     loop {
+        let difficulty = config[&String::from("difficulty")].as_i64().unwrap() as usize;
         clear_screen();
         println!("");
-        let selections = &["Gioca", "Impostazioni", "Punteggi"];
+        let selections = &["Gioca", "Impostazioni", "Punteggi", "Esci"];
         println!("SNAKE");
+        println!("Sviluppato da Tommaso TC e Dilec P.");
+        println!("Ringraziamento speciale al creative designer Andrea B.");
+        println!("");
+        println!("Difficolta' impostata: {}", DIFFICULTIES[difficulty]);
         println!("Quando giochi, usa WASD per muoverti.");
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt(format!("Eccoti, {}", user.username).as_str())
@@ -381,62 +391,29 @@ fn main_menu(user: User, mut config: HashMap<String, serde_json::Value>) {
                 0 => {
                     let (tx, rx) = channel();
                     spawn(move || listen_for_keys(tx));
-                    render_grid(
-                        rx,
-                        config[&String::from("difficulty")].as_i64().unwrap() as usize,
-                        &config,
-                    );
+                    render_grid(rx, difficulty, &config);
                 }
-                1 => {
-                    settings(&mut config);
-                }
-                2 => {
-                    scores(&config);
-                }
+                1 => settings(&mut config, &difficulty),
+                2 => scores(&config),
+                3 => exit(0),
                 _ => unreachable!(),
             }
         }
     }
 }
 
-fn settings(config: &mut HashMap<String, serde_json::Value>) {
+fn settings(config: &mut HashMap<String, serde_json::Value>, difficulty: &usize) {
+    println!("");
     let selections = DIFFICULTIES;
     clear_screen();
     let difficulty = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Difficolta'")
-        .default(0)
+        .default(*difficulty)
         .items(&selections[..])
         .interact_opt()
         .unwrap();
     config.insert(String::from("difficulty"), json!(difficulty.unwrap()));
     serde_json::to_writer(&File::create("config.json").unwrap(), &config).unwrap();
-}
-
-fn scores(config: &HashMap<String, serde_json::Value>) {
-    let client = reqwest::Client::new();
-    let difficulty = config["difficulty"].as_i64().unwrap() as usize;
-    let scores: serde_json::Value = client
-        .get(&format!("http://167.172.50.64/scores/{}", difficulty))
-        .send()
-        .expect("Qualcosa è andato storto")
-        .json()
-        .unwrap();
-    let scores: &Vec<serde_json::Value> = scores.as_array().unwrap();
-    if scores.len() == 0 {
-        println!("Nessun punteggio per la difficoltà {}.", difficulty);
-    }
-    else {
-        println!("Punteggi per la difficoltà {}:", difficulty);
-    }
-    for (i, score) in scores.iter().map(|j| hashmapper(j.clone())).enumerate() {
-        let username = score["username"].as_str().unwrap();
-        let data = score["data"].as_str().unwrap();
-        let score = score["score"].as_str().unwrap();
-        println!("{}) {} - {} - {}", i + 1, score, username, data);
-    }
-    let g = Getch::new();
-    let _ = g.getch().unwrap();
-    println!("Premi qualsiasi tasto per uscire.");
 }
 
 fn read_config() -> serde_json::value::Value {
@@ -461,12 +438,8 @@ fn main() {
     // if first Access or without account this screen will show up
     let mut hashmap = hashmapper(config);
     if !hashmap.contains_key("username") {
-        match login(&mut hashmap) {
-            (Access::Granted, user) => {
-                main_menu(user, hashmap);
-            }
-            _ => unreachable!(),
-        }
+        let user = login(&mut hashmap);
+        main_menu(user, hashmap);
     } else {
         let user = User {
             username: hashmap.get("username").unwrap().to_string(),
