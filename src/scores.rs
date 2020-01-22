@@ -1,4 +1,12 @@
 use crate::*;
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize)]
+struct Score {
+    username: String,
+    score: usize,
+    date: String,
+}
 
 pub fn scores(config: &HashMap<String, serde_json::Value>) {
     println!("");
@@ -10,7 +18,7 @@ pub fn scores(config: &HashMap<String, serde_json::Value>) {
     {
         Ok(mut response) => match response.json::<serde_json::Value>() {
             Ok(scores) => match scores.as_array() {
-                Some(scores) => print_scores(&scores, &difficulty),
+                Some(scores) => print_scores(scores, &difficulty),
                 _ => println!("Qualcosa è andato storto."),
             },
             _ => println!("Qualcosa è andato storto."),
@@ -31,12 +39,34 @@ fn print_scores(scores: &Vec<serde_json::Value>, difficulty: &usize) {
         );
     } else {
         println!("Punteggi per la difficoltà {}:", DIFFICULTIES[*difficulty]);
-    }
-    for (i, score) in scores.iter().map(|j| hashmapper(j.clone())).enumerate() {
-        let username = score["username"].as_str().unwrap();
-        let date = score["date"].as_str().unwrap();
-        let score = score["score"].as_i64().unwrap();
-        println!("{}) {} - {} - {}", i + 1, score, username, date);
+        let scores: Vec<Score> = match scores
+            .iter()
+            .map(move |s| serde_json::from_value(s.clone()))
+            .collect()
+        {
+            Ok(scores) => scores,
+            Err(_) => {
+                println!("Qualcosa è andato storto.");
+                return;
+            }
+        };
+        let max_score_digits = scores.iter().map(|s| s.score).max().unwrap().to_string().len();
+        let max_username_length = scores.iter().map(|s| s.username.len()).max().unwrap();
+        for (score, i) in scores.iter().zip(1..=10) {
+            let space_after_score = " ".repeat(max_score_digits - score.score.to_string().len() + 1);
+            let space_after_name = " ".repeat(max_username_length - score.username.len() + 1);
+            if i != 10 {
+                println!(
+                    "{})  {}{}- {}{}- {}",
+                    i, score.score, space_after_score, score.username, space_after_name, score.date
+                );
+            } else {
+                println!(
+                    "{}) {}{}- {}{}- {}",
+                    i, score.score, space_after_score, score.username, space_after_name, score.date
+                );
+            }
+        }
     }
 }
 

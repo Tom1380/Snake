@@ -137,6 +137,7 @@ fn read_key(g: &Getch) -> Key {
         Ok(83) | Ok(115) => Key::Arrow(Down),
         Ok(65) | Ok(97) => Key::Arrow(Left),
         Ok(10) => Key::Enter,
+        Ok(32) => Key::Enter,
         Ok(27) => match g.getch() {
             Ok(91) => match g.getch() {
                 Ok(65) => Key::Arrow(Up),
@@ -205,7 +206,7 @@ fn print_grid(
 
 fn op_clear_screen(op: &mut OutputBuffer) {
     if cfg!(target_os = "windows") {
-        op.append(&"\n".repeat(30));
+        op.append(&"\n".repeat(50));
     } else {
         op.append("\x1b[2J\x1b[1;1H");
     }
@@ -320,7 +321,7 @@ fn render_grid(rx: Receiver<Key>, difficulty: usize, config: &HashMap<String, se
             Some(new_head) => new_head,
             None => {
                 game_over(&mut op, snake.len() - 1, &config);
-                println!("Premi invio per continuare.");
+                println!("Premi spazio per continuare.");
                 clear_receiver(&rx);
                 let _ = rx.recv();
                 clear_screen();
@@ -329,7 +330,7 @@ fn render_grid(rx: Receiver<Key>, difficulty: usize, config: &HashMap<String, se
         };
         if snake.contains(&new_head) {
             game_over(&mut op, snake.len() - 1, &config);
-            println!("Premi invio per continuare.");
+            println!("Premi spazio per continuare.");
             clear_receiver(&rx);
             let _ = rx.recv();
             clear_screen();
