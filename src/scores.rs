@@ -1,5 +1,5 @@
 use crate::*;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 
 #[derive(Deserialize)]
 struct Score {
