@@ -372,7 +372,6 @@ fn main_menu(user: User, mut config: HashMap<String, serde_json::Value>) {
     loop {
         let difficulty = config[&String::from("difficulty")].as_i64().unwrap() as usize;
         clear_screen();
-        println!("");
         let selections = &["Gioca", "Impostazioni", "Punteggi", "Esci"];
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt(
@@ -440,9 +439,11 @@ fn hashmapper(data: serde_json::value::Value) -> HashMap<String, serde_json::Val
         .collect()
 }
 fn main() {
+    clear_screen();
     let config = read_config();
     // if first Access or without account this screen will show up
     let mut hashmap = hashmapper(config);
+    println!("\n.d8888b. 88d888b. .d8888b. 88  .dP  .d8888b.\nY8ooooo. 88'  `88 88'  `88 88888\"   88____d8\n      88 88    88 88.  .88 88  `8b. 88  \n`88888P' dP    dP `88888P8 dP   `YP `88888P'\n");
     if !hashmap.contains_key("username") {
         let user = login(&mut hashmap);
         main_menu(user, hashmap);
