@@ -374,14 +374,19 @@ fn main_menu(user: User, mut config: HashMap<String, serde_json::Value>) {
         clear_screen();
         println!("");
         let selections = &["Gioca", "Impostazioni", "Punteggi", "Esci"];
-        println!("SNAKE");
-        println!("Sviluppato da Tommaso TC e Dilec P.");
-        println!("Ringraziamento speciale al creative designer Andrea B.");
-        println!("");
-        println!("Difficolta' impostata: {}", DIFFICULTIES[difficulty]);
-        println!("Quando giochi, usa WASD per muoverti.");
         let selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt(format!("Eccoti, {}", user.username).as_str())
+            .with_prompt(
+                format!(
+                    "SNAKE
+Sviluppato da Tommaso TC e Dilec P.
+Ringraziamento speciale al creative designer Andrea B.\n
+Quando giochi, usa WASD per muoverti.
+Difficolta' impostata: {}
+Eccoti, {}",
+                    DIFFICULTIES[difficulty], user.username
+                )
+                .as_str(),
+            )
             .default(0)
             .items(&selections[..])
             .interact_opt()
