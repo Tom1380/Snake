@@ -376,7 +376,8 @@ fn main_menu(user: User, mut config: HashMap<String, serde_json::Value>) {
         let selections = &["Gioca", "Impostazioni", "Punteggi", "Esci"];
         println!("SNAKE");
         println!("Sviluppato da Tommaso TC e Dilec P.");
-        println!("Ringraziamento speciale al creative designer Andrea B.");
+        println!("Ringraziamento speciale al creative designer Andrea B");
+        println!("e al primo beta tester, che ci ha creduto fin dal giorno zero: Lorenzo S.");
         println!("");
         println!("Difficolta' impostata: {}", DIFFICULTIES[difficulty]);
         println!("Quando giochi, usa WASD per muoverti.");
