@@ -10,6 +10,9 @@ import psycopg2 as pg
 app = Flask(__name__)
 
 
+def difficulty_in_rage(difficulty):
+    return 0 <= difficulty and difficulty <= 4
+
 def db_connection():
     while True:
         try:
@@ -36,7 +39,7 @@ def download():
 @app.route('/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
 def upload_score(difficulty, username, score):
     difficulty = int(difficulty)
-    assert 0 <= difficulty and difficulty <= 4
+    assert difficulty_in_rage(difficulty)
     score = int(score)
     assert 0 <= score
     conn, cur = db_connection()
@@ -49,8 +52,8 @@ def upload_score(difficulty, username, score):
 @app.route('/scores/<difficulty>', methods=['GET'])
 def scores(difficulty):
     difficulty = int(difficulty)
-    assert 0 <= difficulty and difficulty <= 4
-    conn, cur = db_connection()
+    assert difficulty_in_rage(difficulty)
+    _ , cur = db_connection()
     cur.execute(
         "SELECT score, username, date FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
     return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 201
@@ -58,8 +61,8 @@ def scores(difficulty):
 @app.route('/absolute_and_personal_high_score/<difficulty>/<username>', methods=['GET'])
 def absolute_and_personal_high_score(difficulty, username):
     difficulty = int(difficulty)
-    assert 0 <= difficulty and difficulty <= 4
-    conn, cur = db_connection()
+    assert difficulty_in_rage(difficulty)
+    _ , cur = db_connection()
     cur.execute('SELECT MAX(score) FROM scores')
     absolute = cur.fetchone()[0]
     cur.execute('SELECT MAX(score) FROM scores WHERE username = %s', [username])

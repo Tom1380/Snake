@@ -1,5 +1,5 @@
 use crate::*;
-use serde::{Deserialize};
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Score {
@@ -50,10 +50,17 @@ fn print_scores(scores: &Vec<serde_json::Value>, difficulty: &usize) {
                 return;
             }
         };
-        let max_score_digits = scores.iter().map(|s| s.score).max().unwrap().to_string().len();
+        let max_score_digits = scores
+            .iter()
+            .map(|s| s.score)
+            .max()
+            .unwrap()
+            .to_string()
+            .len();
         let max_username_length = scores.iter().map(|s| s.username.len()).max().unwrap();
         for (score, i) in scores.iter().zip(1..=10) {
-            let space_after_score = " ".repeat(max_score_digits - score.score.to_string().len() + 1);
+            let space_after_score =
+                " ".repeat(max_score_digits - score.score.to_string().len() + 1);
             let space_after_name = " ".repeat(max_username_length - score.username.len() + 1);
             if i != 10 {
                 println!(
