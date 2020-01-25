@@ -9,3 +9,8 @@ edition = "2018"
 [dependencies]
 getch = "*"
 rand = "*"
+"dialoguer" = "0.5.0"
+"serde_json" =  "1.0.44"
+"serde" = "1.0.104"
+"colored" = "1.9.2"
+"reqwest" = "0.9.24"

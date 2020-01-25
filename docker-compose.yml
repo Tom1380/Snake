@@ -1,0 +1,26 @@
+version: '3'
+services:
+  api:
+    container_name: api_snake
+    build:
+      context: .
+      dockerfile: dev.api.Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    network_mode: host
+    depends_on:
+      - postgres
+  postgres:
+    container_name: database_snake
+    image: "postgres:alpine"
+    restart: always
+    ports:
+      - "6000:5432"
+    volumes:
+      - "./db_data:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
