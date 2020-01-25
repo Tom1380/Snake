@@ -1,5 +1,6 @@
+use crate::config::*;
 use crate::*;
-use serde::{Deserialize};
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Score {
@@ -8,17 +9,19 @@ struct Score {
     date: String,
 }
 
-pub fn scores(config: &HashMap<String, serde_json::Value>) {
+pub fn scores(config: &Config) {
     println!("");
     let client = reqwest::Client::new();
-    let difficulty = config["difficulty"].as_i64().unwrap() as usize;
     match client
-        .get(&format!("http://167.172.50.64/scores/{}", difficulty))
+        .get(&format!(
+            "http://167.172.50.64/scores/{}",
+            config.difficulty
+        ))
         .send()
     {
         Ok(mut response) => match response.json::<serde_json::Value>() {
             Ok(scores) => match scores.as_array() {
-                Some(scores) => print_scores(scores, &difficulty),
+                Some(scores) => print_scores(scores, &config),
                 _ => println!("Qualcosa è andato storto."),
             },
             _ => println!("Qualcosa è andato storto."),
@@ -31,14 +34,17 @@ pub fn scores(config: &HashMap<String, serde_json::Value>) {
     let _ = g.getch().unwrap();
 }
 
-fn print_scores(scores: &Vec<serde_json::Value>, difficulty: &usize) {
+fn print_scores(scores: &Vec<serde_json::Value>, config: &Config) {
     if scores.len() == 0 {
         println!(
             "Nessun punteggio per la difficoltà {}.",
-            DIFFICULTIES[*difficulty]
+            DIFFICULTIES[config.difficulty]
         );
     } else {
-        println!("Punteggi per la difficoltà {}:", DIFFICULTIES[*difficulty]);
+        println!(
+            "Punteggi per la difficoltà {}:",
+            DIFFICULTIES[config.difficulty]
+        );
         let scores: Vec<Score> = match scores
             .iter()
             .map(move |s| serde_json::from_value(s.clone()))
@@ -50,10 +56,17 @@ fn print_scores(scores: &Vec<serde_json::Value>, difficulty: &usize) {
                 return;
             }
         };
-        let max_score_digits = scores.iter().map(|s| s.score).max().unwrap().to_string().len();
+        let max_score_digits = scores
+            .iter()
+            .map(|s| s.score)
+            .max()
+            .unwrap()
+            .to_string()
+            .len();
         let max_username_length = scores.iter().map(|s| s.username.len()).max().unwrap();
         for (score, i) in scores.iter().zip(1..=10) {
-            let space_after_score = " ".repeat(max_score_digits - score.score.to_string().len() + 1);
+            let space_after_score =
+                " ".repeat(max_score_digits - score.score.to_string().len() + 1);
             let space_after_name = " ".repeat(max_username_length - score.username.len() + 1);
             if i != 10 {
                 println!(
@@ -70,16 +83,12 @@ fn print_scores(scores: &Vec<serde_json::Value>, difficulty: &usize) {
     }
 }
 
-pub fn absolute_and_personal_high_score(
-    config: &HashMap<String, serde_json::Value>,
-) -> (Option<usize>, Option<usize>) {
+pub fn absolute_and_personal_high_score(config: &Config) -> (Option<usize>, Option<usize>) {
     let client = reqwest::Client::new();
-    let difficulty = config["difficulty"].as_i64().unwrap() as usize;
-    let username = config["username"].as_str().unwrap();
     match client
         .get(&format!(
             "http://167.172.50.64/absolute_and_personal_high_score/{}/{}",
-            difficulty, username
+            config.difficulty, config.username
         ))
         .send()
     {
