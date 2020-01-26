@@ -37,8 +37,7 @@ fn main_menu(mut config: &mut Config) {
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt(
                 format!(
-                    "SNAKE
-Sviluppato da Tommaso TC e Dilec P.
+"Sviluppato da Tommaso TC e Dilec P.
 Ringraziamento speciale al creative designer Andrea B.\n
 Quando giochi, usa WASD per muoverti.
 Difficolta' impostata: {}
@@ -80,7 +79,6 @@ fn settings(config: &mut Config) {
 
 fn print_snake_ascii_art() {
     println!(".d8888b. 88d888b. .d8888b. 88  .dP  .d8888b.\nY8ooooo. 88'  `88 88'  `88 88888\"   88____d8\n      88 88    88 88.  .88 88  `8b. 88  \n`88888P' dP    dP `88888P8 dP   `YP `88888P'");
-
 }
 
 fn main() {

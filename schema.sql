@@ -3,5 +3,6 @@ CREATE TABLE scores (
     difficulty INTEGER NOT NULL,
     score INTEGER NOT NULL,
     id serial,
-    date TIMESTAMP NOT NULL DEFAULT NOW()
+    date TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id)
 );
