@@ -82,23 +82,3 @@ fn print_scores(scores: &Vec<serde_json::Value>, config: &Config) {
         }
     }
 }
-
-pub fn absolute_and_personal_high_score(config: &Config) -> (Option<usize>, Option<usize>) {
-    let client = reqwest::Client::new();
-    match client
-        .get(&format!(
-            "http://167.172.50.64/absolute_and_personal_high_score/{}/{}",
-            config.difficulty, config.username
-        ))
-        .send()
-    {
-        Ok(mut response) => match response.json::<serde_json::Value>() {
-            Ok(scores) => (
-                scores["absolute"].as_i64().map(|i| i as usize),
-                scores["personal"].as_i64().map(|i| i as usize),
-            ),
-            _ => (None, None),
-        },
-        _ => (None, None),
-    }
-}

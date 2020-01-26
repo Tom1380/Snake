@@ -1,7 +1,7 @@
 mod keys;
 
 use {
-    crate::{config::*, scores::*, *},
+    crate::{config::*, *},
     keys::*,
     rand::random,
     std::{
@@ -207,25 +207,31 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
     op.flush();
     sleep(Duration::from_secs(2));
     let client = reqwest::Client::new();
-    let (absolute, personal) = absolute_and_personal_high_score(&config);
-    if let Some(absolute) = absolute {
-        if score > absolute {
-            println!("Nuovo record in assoluto!");
-        } else if let Some(personal) = personal {
-            if score > personal {
-                println!("Nuovo record personale!");
-            }
-        }
-    }
     match client
         .post(&format!(
             "http://167.172.50.64/upload_score/{}/{}/{}",
             config.difficulty, config.username, score
         ))
         .send()
-        .map(|r| r.status())
+        .map(|r| (r.status(), r))
     {
-        Ok(reqwest::StatusCode::NO_CONTENT) => println!("Punteggio salvato!"),
+        Ok((reqwest::StatusCode::NO_CONTENT, _)) => println!("Punteggio salvato!"),
+        Ok((reqwest::StatusCode::CREATED, mut response)) => {
+            println!("Punteggio salvato!");
+            match response.json::<serde_json::Value>() {
+                Ok(serde_json::Value::Object(json)) =>  {
+                    match json.get("beaten") {
+                        Some(serde_json::Value::String(beaten)) => match beaten.as_str() {
+                            "absolute" => println!("Nuovo record assoluto di {}!", DIFFICULTIES[config.difficulty]),
+                            "personal" => println!("Nuovo record personale di {}!", DIFFICULTIES[config.difficulty]),
+                            _ => {}
+                        },
+                        _ => {}
+                    }
+                },
+                _ => {}
+            }
+        }
         _ => println!("A causa di un problema non ho potuto salvare il punteggio."),
     }
 }
