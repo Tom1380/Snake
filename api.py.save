@@ -7,7 +7,7 @@ import datetime
 import time
 import psycopg2 as pg
 
-app = Flask(__name__,template_folder='/render_templates')
+app = Flask(__name__)
 
 
 def difficulty_in_rage(difficulty):
@@ -22,6 +22,8 @@ def db_connection():
             return conn, cur
         except:
             time.sleep(2)
+/usr/bin/python3
+def db_connection():
             continue
 
 
@@ -49,26 +51,14 @@ def upload_score(difficulty, username, score):
     return ('', 204)
 
 
-@app.route('/scores_json/<difficulty>', methods=['GET'])
-def scores_json(difficulty):
+@app.route('/scores/<difficulty>', methods=['GET'])
+def scores(difficulty):
     difficulty = int(difficulty)
-    assert difficulty_in_range(difficulty)
+    assert difficulty_in_rage(difficulty)
     _ , cur = db_connection()
     cur.execute(
         "SELECT score, username, date FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
     return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 201
-
-@app.route('/scores/<difficulty>', methods=['GET'])
-def scores_table(difficulty):
-    users = []
-    difficulty = int(difficulty)
-    assert difficulty_in_range(difficulty)
-    _ , cur = db_connection()
-    cur.execute(
-        "SELECT score, username, difficulty FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
-    for row in cur.fetchall():
-        users.append({'score': row[0], 'name': row[1], 'difficolta': row[2]})
-    return render_template('table.html', users=users)
 
 @app.route('/absolute_and_personal_high_score/<difficulty>/<username>', methods=['GET'])
 def absolute_and_personal_high_score(difficulty, username):

@@ -1,0 +1,33 @@
+<style>
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+  </style>
+  <table>
+
+  
+    
+    <table>
+      <thead><tr><th>Name</th><th>Difficoltà</th><th>Score</th></tr></thead>
+      {% for user in users %}
+      <tbody>
+      <tr><th>{{user['name']}}</th><th>{{user['difficolta']}}</th><th>{{user['score']}}</th></tr>
+      </tbody>
+      {% endfor %}
+      </table>
+
+    
+
+</table>
