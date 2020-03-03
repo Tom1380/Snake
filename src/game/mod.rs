@@ -6,6 +6,7 @@ use {
     rand::random,
     std::{
         collections::VecDeque,
+        io::{stdout, Write},
         sync::mpsc::{channel, Receiver},
         thread::{sleep, spawn},
         time::Duration,
@@ -123,8 +124,19 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
                     return;
                 }
                 Key::Pause => {
-                    // std::process::exit(1);
+                    op.clear_screen();
+                    print_grid(&snake, &snacks, &mut op, &config);
                     let _ = rx.recv();
+                    op.flush();
+                    print!("RIPARTENZA IN 3");
+                    stdout().flush().unwrap();
+                    sleep(Duration::from_secs(1));
+                    print!(", 2");
+                    stdout().flush().unwrap();
+                    sleep(Duration::from_secs(1));
+                    print!(", 1");
+                    stdout().flush().unwrap();
+                    sleep(Duration::from_secs(1));
                 }
                 _ => unreachable!(),
             };
@@ -196,7 +208,7 @@ fn generate_snacks(snake: &VecDeque<Cell>, snacks: &mut VecDeque<Cell>) {
             x: random::<u8>() % ROWS,
             y: random::<u8>() % COLUMNS,
         };
-        if !(snake.contains(&snack_location) || snacks.contains(&snack_location))  {
+        if !(snake.contains(&snack_location) || snacks.contains(&snack_location)) {
             snacks.push_front(snack_location);
         }
     }
