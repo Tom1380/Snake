@@ -134,7 +134,7 @@ mod funny_pause_game {
                 "esci" => return,
                 "" => {}
                 _ => {
-                    match input.split(" ").map(|n| n.replace(",", ".").parse::<f64>()).collect::<Result<Vec<f64>, _>>() {
+                    match input.split(" ").filter(|n| n != &"").map(|n| n.replace(",", ".").parse::<f64>()).collect::<Result<Vec<f64>, _>>() {
                         Ok(new_numbers) => {
                             for &number in &new_numbers {
                                 numbers.push(number);
@@ -146,7 +146,7 @@ mod funny_pause_game {
                                 println!("Inseriti {} nuovi numeri.\n", new_numbers.len());
                             }
                         }
-                        Err(_) => println!("Inserisci numeri con lo spazio, per i numeri decimali non usare la virgola, ma il punto.")
+                        Err(_) => println!("Comando non capito.\n")
                     }
                 }
             }
