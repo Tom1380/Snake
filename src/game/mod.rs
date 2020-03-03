@@ -16,7 +16,7 @@ const ROWS: u8 = 20;
 const COLUMNS: u8 = 20;
 const CELLS: u16 = ROWS as u16 * COLUMNS as u16;
 // How many snacks should be dropped at a time?
-const MAX_SNACKS_DROPPED: u16 = CELLS / 30;
+const MAX_SNACKS_DROPPED: usize = CELLS as usize / 30;
 // Seconds to cross a cell.
 const SPEEDS: &'static [f32] = &[0.2, 0.1, 0.08, 0.05, 0.03];
 
@@ -103,7 +103,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
     let sleep_duration = Duration::from_secs_f32(SPEEDS[config.difficulty]);
     let mut snake = vec![Cell { x: 0, y: 0 }].into_iter().collect();
     let mut op = OutputBuffer::with_capacity(CELLS as usize + 20);
-    let mut snacks = generate_snacks(&snake);
+    let mut snacks = VecDeque::with_capacity(MAX_SNACKS_DROPPED);
     let mut direction: Direction = match rx.recv().unwrap() {
         Key::Arrow(direction) => direction,
         Key::Space => {
@@ -155,7 +155,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
             snake.pop_front();
         }
         if snacks.is_empty() {
-            snacks = generate_snacks(&snake);
+            generate_snacks(&snake, &mut snacks);
         }
         snake.push_back(new_head);
     }
@@ -190,20 +190,16 @@ fn print_grid(
     );
 }
 
-fn generate_snacks(snake: &VecDeque<Cell>) -> VecDeque<Cell> {
-    let space_left = CELLS - snake.len() as u16;
-    let snacks_dropped = MAX_SNACKS_DROPPED.min(space_left);
-    let mut snacks = VecDeque::with_capacity(snacks_dropped as usize);
-    for _ in 0..snacks.capacity() {
+fn generate_snacks(snake: &VecDeque<Cell>, snacks: &mut VecDeque<Cell>) {
+    for _ in 0..MAX_SNACKS_DROPPED {
         let snack_location = Cell {
             x: random::<u8>() % ROWS,
             y: random::<u8>() % COLUMNS,
         };
-        if !snake.contains(&snack_location) {
+        if !(snake.contains(&snack_location) || snacks.contains(&snack_location))  {
             snacks.push_front(snack_location);
         }
     }
-    snacks
 }
 
 fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
