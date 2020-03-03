@@ -7,4 +7,5 @@ COPY api.py /usr/bin
 WORKDIR /
 COPY target/x86_64-pc-windows-gnu/release/snake.exe /
 RUN zip snake.zip snake.exe
+COPY render_templates /render_templates
 CMD ["python3", "/usr/bin/api.py"]
