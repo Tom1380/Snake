@@ -37,8 +37,7 @@ fn main_menu(mut config: &mut Config) {
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt(
                 format!(
-
-"Sviluppato da Tommaso TC e Dilec P.
+                    "Sviluppato da Tommaso TC e Dilec P.
 Ringraziamento speciale al creative designer Andrea B,
 al nostro primo beta tester, che ci ha creduto fin dal giorno zero: Lorenzo S
 e al nostro pluripremiato bug fixer: l'egregio signor Giorgio M.

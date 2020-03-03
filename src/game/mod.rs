@@ -128,15 +128,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
                     print_grid(&snake, &snacks, &mut op, &config);
                     let _ = rx.recv();
                     op.flush();
-                    print!("RIPARTENZA IN 3");
-                    stdout().flush().unwrap();
-                    sleep(Duration::from_secs(1));
-                    print!(", 2");
-                    stdout().flush().unwrap();
-                    sleep(Duration::from_secs(1));
-                    print!(", 1");
-                    stdout().flush().unwrap();
-                    sleep(Duration::from_secs(1));
+                    wait_after_game_resume();
                 }
                 _ => unreachable!(),
             };
@@ -194,7 +186,7 @@ fn print_grid(
     }
     op.append(
         format!(
-            "Punteggio: {}, difficolta': {}\n",
+            "Punteggio: {}, difficoltà: {}.\n",
             snake.len() - 1,
             DIFFICULTIES[config.difficulty]
         )
@@ -254,4 +246,17 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
 
 fn clear_receiver(rx: &Receiver<Key>) {
     while let Ok(_) = rx.try_recv() {}
+}
+
+fn wait_after_game_resume() {
+    let mut so = stdout();
+    print!("RIPARTENZA IN 3");
+    so.flush().unwrap();
+    sleep(Duration::from_secs(1));
+    print!(", 2");
+    so.flush().unwrap();
+    sleep(Duration::from_secs(1));
+    print!(", 1");
+    so.flush().unwrap();
+    sleep(Duration::from_secs(1));
 }
