@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 import json
 import hashlib
 import datetime
 import time
 import psycopg2 as pg
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='/render_templates')
 
 
 def difficulty_in_range(difficulty):
@@ -54,12 +54,24 @@ def upload_score(difficulty, username, score):
 
 
 @app.route('/scores/<difficulty>', methods=['GET'])
-def scores(difficulty):
+def scores_json(difficulty):
     difficulty = int(difficulty)
     assert difficulty_in_range(difficulty)
     _ , cur = db_connection()
     cur.execute(
         "SELECT score, username, date FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
     return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 201
+
+@app.route('/scores_table/<difficulty>', methods=['GET'])
+def scores_table(difficulty):
+    users = []
+    difficulty = int(difficulty)
+    assert difficulty_in_range(difficulty)
+    _ , cur = db_connection()
+    cur.execute(
+        "SELECT score, username, difficulty FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
+    for row in cur.fetchall():
+        users.append({'score': row[0], 'name': row[1], 'difficolta': row[2]})
+    return render_template('table.html', users=users)
 
 app.run(debug=True, host='0.0.0.0', port=80, threaded=True)

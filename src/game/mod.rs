@@ -106,7 +106,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
     let mut snacks = generate_snacks(&snake);
     let mut direction: Direction = match rx.recv().unwrap() {
         Key::Arrow(direction) => direction,
-        Key::Enter => {
+        Key::Space => {
             return;
         }
         _ => unreachable!(),
@@ -119,8 +119,12 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
         if let Ok(key) = rx.try_recv() {
             match key {
                 Key::Arrow(new_direction) => direction = new_direction,
-                Key::Enter => {
+                Key::Space => {
                     return;
+                }
+                Key::Pause => {
+                    // std::process::exit(1);
+                    let _ = rx.recv();
                 }
                 _ => unreachable!(),
             };
@@ -219,15 +223,19 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
         Ok((reqwest::StatusCode::CREATED, mut response)) => {
             println!("Punteggio salvato!");
             match response.json::<serde_json::Value>() {
-                Ok(serde_json::Value::Object(json)) =>  {
-                    match json.get("beaten") {
-                        Some(serde_json::Value::String(beaten)) => match beaten.as_str() {
-                            "absolute" => println!("Nuovo record assoluto di {}!", DIFFICULTIES[config.difficulty]),
-                            "personal" => println!("Nuovo record personale di {}!", DIFFICULTIES[config.difficulty]),
-                            _ => {}
-                        },
+                Ok(serde_json::Value::Object(json)) => match json.get("beaten") {
+                    Some(serde_json::Value::String(beaten)) => match beaten.as_str() {
+                        "absolute" => println!(
+                            "Nuovo record assoluto di {}!",
+                            DIFFICULTIES[config.difficulty]
+                        ),
+                        "personal" => println!(
+                            "Nuovo record personale di {}!",
+                            DIFFICULTIES[config.difficulty]
+                        ),
                         _ => {}
-                    }
+                    },
+                    _ => {}
                 },
                 _ => {}
             }

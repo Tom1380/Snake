@@ -37,7 +37,7 @@ fn main_menu(mut config: &mut Config) {
         let selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt(
                 format!(
-"Sviluppato da Tommaso TC e Dilec P.
+                    "Sviluppato da Tommaso TC e Dilec P.
 Ringraziamento speciale al creative designer Andrea B.\n
 Quando giochi, usa WASD per muoverti.
 Difficolta' impostata: {}
