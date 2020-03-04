@@ -25,9 +25,13 @@ def db_connection():
             continue
 
 @app.route('/', methods=['GET'])
-def download():
-    return send_from_directory("/", "snake.zip", as_attachment=True)
+def download_windows():
+    return send_from_directory("/releases/windows", "snake.zip", as_attachment=True)
 
+
+@app.route('/linux', methods=['GET'])
+def download_linux():
+    return send_from_directory("/releases/linux", "snake.zip", as_attachment=True)
 
 @app.route('/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
 def upload_score(difficulty, username, score):
