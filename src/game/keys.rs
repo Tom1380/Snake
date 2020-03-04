@@ -115,26 +115,7 @@ mod funny_pause_game {
                 "snake" | "gioca" | "gioco" | "esci" | "basta" | "fine" | "ritorna" | "torna"
                 | "chiudi" | "riparti" | "continua" => return,
                 "" => {}
-                _ => {
-                    match input
-                        .split(" ")
-                        .filter(|n| n != &"")
-                        .map(|n| n.replace(",", ".").parse::<f64>())
-                        .collect::<Result<Vec<f64>, _>>()
-                    {
-                        Ok(new_numbers) => {
-                            for &number in &new_numbers {
-                                numbers.push(number);
-                            }
-                            if new_numbers.len() == 1 {
-                                println!("Inserito 1 nuovo numero.\n");
-                            } else {
-                                println!("Inseriti {} nuovi numeri.\n", new_numbers.len());
-                            }
-                        }
-                        Err(_) => println!("Comando non capito.\n"),
-                    }
-                }
+                _ => try_to_push_new_numbers(&input, &mut numbers)
             }
         }
     }
@@ -181,6 +162,27 @@ Inserendo numeri, anche più di uno sulla stessa linea, se separati da spazio, l
                 "\nLa media è {}.\n",
                 numbers.iter().sum::<f64>() / numbers.len() as f64
             );
+        }
+    }
+
+    fn try_to_push_new_numbers(input: &String, numbers: &mut Vec<f64>) {
+        match input
+            .split(" ")
+            .filter(|n| n != &"")
+            .map(|n| n.replace(",", ".").parse::<f64>())
+            .collect::<Result<Vec<f64>, _>>()
+        {
+            Ok(new_numbers) => {
+                for &number in &new_numbers {
+                    numbers.push(number);
+                }
+                if new_numbers.len() == 1 {
+                    println!("Inserito 1 nuovo numero.\n");
+                } else {
+                    println!("Inseriti {} nuovi numeri.\n", new_numbers.len());
+                }
+            }
+            Err(_) => println!("Comando non capito.\n"),
         }
     }
 }
