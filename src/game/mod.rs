@@ -113,9 +113,9 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
         _ => unreachable!(),
     };
     loop {
-        op.flush();
         op.clear_screen();
         print_grid(&snake, &snacks, &mut op, &config);
+        op.flush();
         sleep(sleep_duration);
         if let Ok(key) = rx.try_recv() {
             match key {
