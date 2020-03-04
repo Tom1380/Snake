@@ -115,7 +115,7 @@ mod funny_pause_game {
                 "snake" | "gioca" | "gioco" | "esci" | "basta" | "fine" | "ritorna" | "torna"
                 | "chiudi" | "riparti" | "continua" => return,
                 "" => {}
-                _ => try_to_push_new_numbers(&input, &mut numbers)
+                _ => try_to_push_new_numbers(&input, &mut numbers),
             }
         }
     }

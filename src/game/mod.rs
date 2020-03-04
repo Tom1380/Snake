@@ -129,6 +129,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
                     let _ = rx.recv();
                     op.flush();
                     wait_after_game_resume();
+                    continue;
                 }
                 _ => unreachable!(),
             };
@@ -171,7 +172,6 @@ fn print_grid(
     op: &mut OutputBuffer,
     config: &Config,
 ) {
-    // if cfg!(target_os = "windows") {
     for y in 0..ROWS {
         for x in 0..COLUMNS {
             if snake.contains(&Cell { x, y }) {
