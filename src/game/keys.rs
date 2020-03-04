@@ -1,7 +1,10 @@
 use {
     crate::clear_screen,
     getch::Getch,
-    std::{io::stdin, sync::mpsc::Sender},
+    std::{
+        io::{stdin, stdout, Write},
+        sync::mpsc::Sender,
+    },
 };
 
 #[derive(Debug, PartialEq)]
@@ -100,55 +103,19 @@ mod funny_pause_game {
         let mut input = String::new();
         let mut numbers: Vec<f64> = Vec::new();
         loop {
-            input.clear();
-            stdin().read_line(&mut input).unwrap();
-            println!("");
-            input.make_ascii_lowercase();
-            input.pop();
-            input = input.trim().to_string();
+            get_input(&mut input);
             match input.as_str() {
-                "riavvia" => {
+                "riavvia" | "riavvio" => {
                     clear_screen();
                     numbers.clear();
                     print_help();
                 }
-                "media" => {
-                    if numbers.len() == 0 {
-                        println!("Nessun numero inserito, perciò la media è 0.\n");
-                    } else {
-                        if numbers.len() == 1 {
-                            println!("Hai inserito 1 numero:");
-                        } else {
-                            println!("Hai inserito {} numeri:", numbers.len());
-                        }
-                        for n in &numbers {
-                            println!("{}", n);
-                        }
-                        println!(
-                            "\nLa media è {}\n",
-                            numbers.iter().sum::<f64>() / numbers.len() as f64
-                        );
-                    }
-                }
-                "aiuto" => print_help(),
-                "esci" => return,
+                "media" => show_mean(&numbers),
+                "aiuto" | "info" => print_help(),
+                "snake" | "gioca" | "gioco" | "esci" | "basta" | "fine" | "ritorna" | "torna"
+                | "chiudi" | "riparti" | "continua" => return,
                 "" => {}
-                _ => {
-                    match input.split(" ").map(|n| n.replace(",", ".").parse::<f64>()).collect::<Result<Vec<f64>, _>>() {
-                        Ok(new_numbers) => {
-                            for &number in &new_numbers {
-                                numbers.push(number);
-                            }
-                            if new_numbers.len() == 1 {
-                                println!("Inserito 1 nuovo numero.\n");
-                            }
-                            else {
-                                println!("Inseriti {} nuovi numeri.\n", new_numbers.len());
-                            }
-                        }
-                        Err(_) => println!("Inserisci numeri con lo spazio, per i numeri decimali non usare la virgola, ma il punto.")
-                    }
-                }
+                _ => try_to_push_new_numbers(&input, &mut numbers),
             }
         }
     }
@@ -161,5 +128,61 @@ Comandi:
 \"aiuto\": Mostra le istruzioni.
 Inserendo numeri, anche più di uno sulla stessa linea, se separati da spazio, li aggiungi alla lista.
 ");
+    }
+
+    fn get_input(mut input: &mut String) {
+        input.clear();
+        print!("> ");
+        stdout().flush().unwrap();
+        stdin().read_line(&mut input).unwrap();
+        println!("");
+        input.make_ascii_lowercase();
+        input.pop();
+        *input = input.trim().to_string();
+    }
+
+    fn show_mean(numbers: &Vec<f64>) {
+        if numbers.len() == 0 {
+            println!("Nessun numero inserito, perciò la media è 0.\n");
+        } else {
+            if numbers.len() == 1 {
+                println!("Hai inserito 1 numero:");
+            } else {
+                println!("Hai inserito {} numeri:", numbers.len());
+            }
+            // How many digits is the longest index?
+            let max_digits = numbers.len().to_string().len();
+            for (i, n) in (&numbers).iter().enumerate() {
+                let i = i + 1;
+                let i_digits = i.to_string().len();
+                let spaces_to_print = " ".repeat(max_digits - i_digits + 1);
+                println!("{}){}{}.", i, spaces_to_print, n);
+            }
+            println!(
+                "\nLa media è {}.\n",
+                numbers.iter().sum::<f64>() / numbers.len() as f64
+            );
+        }
+    }
+
+    fn try_to_push_new_numbers(input: &String, numbers: &mut Vec<f64>) {
+        match input
+            .split(" ")
+            .filter(|n| n != &"")
+            .map(|n| n.replace(",", ".").parse::<f64>())
+            .collect::<Result<Vec<f64>, _>>()
+        {
+            Ok(new_numbers) => {
+                for &number in &new_numbers {
+                    numbers.push(number);
+                }
+                if new_numbers.len() == 1 {
+                    println!("Inserito 1 nuovo numero.\n");
+                } else {
+                    println!("Inseriti {} nuovi numeri.\n", new_numbers.len());
+                }
+            }
+            Err(_) => println!("Comando non capito.\n"),
+        }
     }
 }

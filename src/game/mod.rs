@@ -6,6 +6,7 @@ use {
     rand::random,
     std::{
         collections::VecDeque,
+        io::{stdout, Write},
         sync::mpsc::{channel, Receiver},
         thread::{sleep, spawn},
         time::Duration,
@@ -112,9 +113,9 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
         _ => unreachable!(),
     };
     loop {
-        op.flush();
         op.clear_screen();
         print_grid(&snake, &snacks, &mut op, &config);
+        op.flush();
         sleep(sleep_duration);
         if let Ok(key) = rx.try_recv() {
             match key {
@@ -123,8 +124,12 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
                     return;
                 }
                 Key::Pause => {
-                    // std::process::exit(1);
+                    op.clear_screen();
+                    print_grid(&snake, &snacks, &mut op, &config);
                     let _ = rx.recv();
+                    op.flush();
+                    wait_after_game_resume();
+                    continue;
                 }
                 _ => unreachable!(),
             };
@@ -167,7 +172,6 @@ fn print_grid(
     op: &mut OutputBuffer,
     config: &Config,
 ) {
-    // if cfg!(target_os = "windows") {
     for y in 0..ROWS {
         for x in 0..COLUMNS {
             if snake.contains(&Cell { x, y }) {
@@ -182,7 +186,7 @@ fn print_grid(
     }
     op.append(
         format!(
-            "Punteggio: {}, difficolta': {}\n",
+            "Punteggio: {}, difficoltà: {}.\n",
             snake.len() - 1,
             DIFFICULTIES[config.difficulty]
         )
@@ -196,7 +200,7 @@ fn generate_snacks(snake: &VecDeque<Cell>, snacks: &mut VecDeque<Cell>) {
             x: random::<u8>() % ROWS,
             y: random::<u8>() % COLUMNS,
         };
-        if !(snake.contains(&snack_location) || snacks.contains(&snack_location))  {
+        if !(snake.contains(&snack_location) || snacks.contains(&snack_location)) {
             snacks.push_front(snack_location);
         }
     }
@@ -242,4 +246,17 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
 
 fn clear_receiver(rx: &Receiver<Key>) {
     while let Ok(_) = rx.try_recv() {}
+}
+
+fn wait_after_game_resume() {
+    let mut so = stdout();
+    print!("RIPARTENZA IN 3");
+    so.flush().unwrap();
+    sleep(Duration::from_secs(1));
+    print!(", 2");
+    so.flush().unwrap();
+    sleep(Duration::from_secs(1));
+    print!(", 1");
+    so.flush().unwrap();
+    sleep(Duration::from_secs(1));
 }
