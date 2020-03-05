@@ -28,10 +28,20 @@ def db_connection():
 def download_windows():
     return send_from_directory("/releases/windows", "snake.zip", as_attachment=True)
 
+@app.route('/hash', methods=['GET'])
+def windows_hash():
+    with open('/releases/windows/hash', 'r') as hash:
+        return hash.read()
 
 @app.route('/linux', methods=['GET'])
 def download_linux():
     return send_from_directory("/releases/linux", "snake.zip", as_attachment=True)
+
+@app.route('/linux/hash', methods=['GET'])
+def linux_hash():
+    with open('/releases/linux/hash', 'r') as hash:
+        return hash.read()
+
 
 @app.route('/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
 def upload_score(difficulty, username, score):
