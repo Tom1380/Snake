@@ -2,5 +2,7 @@
 !render_templates/*
 !requirements.txt
 !api.py
+!target/x86_64-pc-windows-gnu/release/launcher.exe
+!target/release/launcher
 !target/x86_64-pc-windows-gnu/release/snake.exe
 !target/release/snake

@@ -24,24 +24,47 @@ def db_connection():
             time.sleep(2)
             continue
 
-@app.route('/snake', methods=['GET'])
+@app.route('/', methods=['GET'])
 def download_windows():
+    return send_from_directory("/releases/windows", "launcher.zip", as_attachment=True)
+
+
+@app.route('/hash', methods=['GET'])
+def windows_hash():
+    with open('/releases/windows/launcher_hash', 'r') as hash:
+        return hash.read()
+
+@app.route('/linux', methods=['GET'])
+def download_linux():
+    return send_from_directory("/releases/linux", "launcher.zip", as_attachment=True)
+
+
+@app.route('/linux/hash', methods=['GET'])
+def linux_hash():
+    with open('/releases/linux/launcher_hash', 'r') as hash:
+        return hash.read()
+
+
+# Snake
+
+
+@app.route('/snake', methods=['GET'])
+def download_windows_snake():
     return send_from_directory("/releases/windows", "snake.zip", as_attachment=True)
 
 @app.route('/snake/hash', methods=['GET'])
-def windows_hash():
+def windows_hash_snake():
     with open('/releases/windows/snake_hash', 'r') as hash:
         return hash.read()
 
 @app.route('/snake/linux', methods=['GET'])
-def download_linux():
+def download_linux_snake():
     return send_from_directory("/releases/linux", "snake.zip", as_attachment=True)
 
 @app.route('/snake/linux/hash', methods=['GET'])
-def linux_hash():
+def linux_hash_snake():
     with open('/releases/linux/snake_hash', 'r') as hash:
         return hash.read()
-
 
 @app.route('/snake/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
 def upload_score(difficulty, username, score):
@@ -85,7 +108,7 @@ def scores_table(difficulty):
     cur.execute(
         "SELECT score, username, difficulty FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
     for row in cur.fetchall():
-        users.append({'score': row[0], 'name': row[1], 'difficolta: row[2]})
+        users.append({'score': row[0], 'name': row[1], 'difficolta': row[2]})
     return render_template('table.html', users=users)
 
 app.run(debug=True, host='0.0.0.0', port=80, threaded=True)
