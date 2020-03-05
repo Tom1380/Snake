@@ -14,7 +14,7 @@ pub fn scores(config: &Config) {
     let client = reqwest::Client::new();
     match client
         .get(&format!(
-            "http://167.172.50.64/scores/{}",
+            "http://167.172.50.64/snake/scores/{}",
             config.difficulty
         ))
         .send()
@@ -64,6 +64,9 @@ fn print_scores(scores: &Vec<serde_json::Value>, config: &Config) {
             .to_string()
             .len();
         let max_username_length = scores.iter().map(|s| s.username.len()).max().unwrap();
+        println!("");
+        // How many '-' to print between the lines to separate them perfectly.
+        let separator = "-".repeat(max_score_digits + max_username_length + 39);
         for (score, i) in scores.iter().zip(1..=10) {
             let space_after_score =
                 " ".repeat(max_score_digits - score.score.to_string().len() + 1);
@@ -79,6 +82,7 @@ fn print_scores(scores: &Vec<serde_json::Value>, config: &Config) {
                     i, score.score, space_after_score, score.username, space_after_name, score.date
                 );
             }
+            println!("{}", separator);
         }
     }
 }

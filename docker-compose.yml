@@ -1,10 +1,10 @@
 version: '3'
 services:
   api:
-    container_name: api_snake
+    container_name: games_api
     build:
       context: .
-      dockerfile: dev.api.Dockerfile
+      dockerfile: snake.Dockerfile
     restart: always
     ports:
       - "80:80"
@@ -12,7 +12,7 @@ services:
     depends_on:
       - postgres
   postgres:
-    container_name: database_snake
+    container_name: games_database
     image: "postgres:alpine"
     restart: always
     ports:

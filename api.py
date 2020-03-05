@@ -7,7 +7,7 @@ import datetime
 import time
 import psycopg2 as pg
 
-app = Flask(__name__,template_folder='/render_templates')
+app = Flask(__name__, template_folder='/render_templates')
 
 
 def difficulty_in_range(difficulty):
@@ -24,26 +24,26 @@ def db_connection():
             time.sleep(2)
             continue
 
-@app.route('/', methods=['GET'])
+@app.route('/snake', methods=['GET'])
 def download_windows():
     return send_from_directory("/releases/windows", "snake.zip", as_attachment=True)
 
-@app.route('/hash', methods=['GET'])
+@app.route('/snake/hash', methods=['GET'])
 def windows_hash():
-    with open('/releases/windows/hash', 'r') as hash:
+    with open('/releases/windows/snake_hash', 'r') as hash:
         return hash.read()
 
-@app.route('/linux', methods=['GET'])
+@app.route('/snake/linux', methods=['GET'])
 def download_linux():
     return send_from_directory("/releases/linux", "snake.zip", as_attachment=True)
 
-@app.route('/linux/hash', methods=['GET'])
+@app.route('/snake/linux/hash', methods=['GET'])
 def linux_hash():
-    with open('/releases/linux/hash', 'r') as hash:
+    with open('/releases/linux/snake_hash', 'r') as hash:
         return hash.read()
 
 
-@app.route('/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
+@app.route('/snake/upload_score/<difficulty>/<username>/<score>', methods=['POST'])
 def upload_score(difficulty, username, score):
     difficulty = int(difficulty)
     assert difficulty_in_range(difficulty)
@@ -67,7 +67,7 @@ def upload_score(difficulty, username, score):
     return ('', 204)
 
 
-@app.route('/scores/<difficulty>', methods=['GET'])
+@app.route('/snake/scores/<difficulty>', methods=['GET'])
 def scores_json(difficulty):
     difficulty = int(difficulty)
     assert difficulty_in_range(difficulty)
@@ -76,7 +76,7 @@ def scores_json(difficulty):
         "SELECT score, username, date FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
     return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 201
 
-@app.route('/scores_table/<difficulty>', methods=['GET'])
+@app.route('/snake/scores_table/<difficulty>', methods=['GET'])
 def scores_table(difficulty):
     users = []
     difficulty = int(difficulty)
@@ -85,7 +85,7 @@ def scores_table(difficulty):
     cur.execute(
         "SELECT score, username, difficulty FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
     for row in cur.fetchall():
-        users.append({'score': row[0], 'name': row[1], 'difficolta': row[2]})
+        users.append({'score': row[0], 'name': row[1], 'difficolta: row[2]})
     return render_template('table.html', users=users)
 
 app.run(debug=True, host='0.0.0.0', port=80, threaded=True)

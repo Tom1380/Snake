@@ -43,7 +43,7 @@ al nostro primo beta tester, che ci ha creduto fin dal giorno zero: Lorenzo S
 e al nostro pluripremiato bug fixer: l'egregio signor Giorgio M.
 
 Quando giochi, usa WASD per muoverti.
-Difficolta' impostata: {}
+Difficoltà impostata: {}
 Eccoti, {}",
                     DIFFICULTIES[config.difficulty], config.username
                 )
@@ -71,7 +71,7 @@ fn settings(config: &mut Config) {
     let selections = DIFFICULTIES;
     clear_screen();
     config.difficulty = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Difficolta'")
+        .with_prompt("Difficoltà")
         .default(config.difficulty)
         .items(&selections[..])
         .interact_opt()

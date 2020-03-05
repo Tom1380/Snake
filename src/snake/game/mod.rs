@@ -213,7 +213,7 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
     let client = reqwest::Client::new();
     match client
         .post(&format!(
-            "http://167.172.50.64/upload_score/{}/{}/{}",
+            "http://167.172.50.64/snake/upload_score/{}/{}/{}",
             config.difficulty, config.username, score
         ))
         .send()

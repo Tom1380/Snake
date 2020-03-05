@@ -351,6 +351,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "games"
+version = "0.1.0"
+dependencies = [
+ "colored 1.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dialoguer 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "getch 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "reqwest 0.9.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.45 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "getch"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1064,19 +1077,6 @@ dependencies = [
 name = "smallvec"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "snake"
-version = "0.1.0"
-dependencies = [
- "colored 1.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "dialoguer 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "getch 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "reqwest 0.9.24 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.45 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "string"

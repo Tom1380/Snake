@@ -1,8 +1,21 @@
 [package]
-name = "snake"
+name = "games"
 version = "0.1.0"
 authors = ["Tommaso Thea Cioni <zacktommy1118@gmail.com>"]
 edition = "2018"
+default-run = "launcher"
+
+[lib]
+name = "games"
+path = "src/lib.rs"
+
+[[bin]]
+name = "launcher"
+path = "src/launcher/main.rs"
+
+[[bin]]
+name = "snake"
+path = "src/snake/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
