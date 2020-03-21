@@ -105,6 +105,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
     let mut snake = vec![Cell { x: 0, y: 0 }].into_iter().collect();
     let mut op = OutputBuffer::with_capacity(CELLS as usize + 20);
     let mut snacks = VecDeque::with_capacity(MAX_SNACKS_DROPPED);
+    generate_snacks(&snake, &mut snacks);
     let mut direction: Direction = match rx.recv().unwrap() {
         Key::Arrow(direction) => direction,
         Key::Space => {
