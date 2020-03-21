@@ -137,20 +137,12 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
         let new_head = match snake.iter().last().unwrap().neighbour(&direction) {
             Some(new_head) => new_head,
             None => {
-                game_over(&mut op, snake.len() - 1, &config);
-                println!("Premi spazio per continuare.");
-                clear_receiver(&rx);
-                let _ = rx.recv();
-                clear_screen();
+                game_over(&mut op, rx, snake.len() - 1, &config);
                 return;
             }
         };
         if snake.contains(&new_head) {
-            game_over(&mut op, snake.len() - 1, &config);
-            println!("Premi spazio per continuare.");
-            clear_receiver(&rx);
-            let _ = rx.recv();
-            clear_screen();
+            game_over(&mut op, rx, snake.len() - 1, &config);
             return;
         } else if let Some(i) = snacks.iter().position(|cell| *cell == new_head) {
             snacks.remove(i);
@@ -206,10 +198,9 @@ fn generate_snacks(snake: &VecDeque<Cell>, snacks: &mut VecDeque<Cell>) {
     }
 }
 
-fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
+fn game_over(op: &mut OutputBuffer, rx: Receiver<Key>, score: usize, config: &Config) {
     op.append("HAI PERSO.\n");
     op.flush();
-    sleep(Duration::from_secs(2));
     let client = reqwest::Client::new();
     match client
         .post(&format!(
@@ -241,11 +232,14 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
             }
         }
         _ => println!("A causa di un problema non ho potuto salvare il punteggio."),
+    };
+    println!("Premi spazio per continuare.");
+    loop {
+        if let Ok(Key::Space) = rx.recv() {
+            break;
+        }
     }
-}
-
-fn clear_receiver(rx: &Receiver<Key>) {
-    while let Ok(_) = rx.try_recv() {}
+    clear_screen();
 }
 
 fn wait_after_game_resume() {
