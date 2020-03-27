@@ -7,6 +7,7 @@ use {
     dialoguer::{theme::ColorfulTheme, Select},
     fs::File,
     game::*,
+    game_arcade::clear_screen,
     getch::*,
     reqwest,
     scores::*,
@@ -20,14 +21,6 @@ const DIFFICULTIES: &'static [&'static str] = &[
     "Sono Russo Dentro",
     "Iran 2020",
 ];
-
-fn clear_screen() {
-    if cfg!(target_os = "windows") {
-        println!("{}", "\n".repeat(30));
-    } else {
-        print!("\x1b[2J\x1b[1;1H");
-    }
-}
 
 fn main_menu(mut config: &mut Config) {
     loop {

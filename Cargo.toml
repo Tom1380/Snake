@@ -1,12 +1,12 @@
 [package]
-name = "games"
+name = "game_arcade"
 version = "0.1.0"
 authors = ["Tommaso Thea Cioni <zacktommy1118@gmail.com>"]
 edition = "2018"
 default-run = "launcher"
 
 [lib]
-name = "games"
+name = "game_arcade"
 path = "src/lib.rs"
 
 [[bin]]

@@ -2,6 +2,7 @@ mod keys;
 
 use {
     crate::{config::*, *},
+    game_arcade::*,
     keys::*,
     rand::random,
     std::{
@@ -62,35 +63,6 @@ impl Cell {
             }
         }
         Some(neighbour)
-    }
-}
-
-struct OutputBuffer {
-    buffer: String,
-}
-
-impl OutputBuffer {
-    fn with_capacity(capacity: usize) -> OutputBuffer {
-        OutputBuffer {
-            buffer: String::with_capacity(capacity),
-        }
-    }
-
-    fn append(&mut self, s: &str) {
-        self.buffer.push_str(&s);
-    }
-
-    fn flush(&mut self) {
-        print!("{}", &self.buffer);
-        self.buffer.clear();
-    }
-
-    fn clear_screen(&mut self) {
-        if cfg!(target_os = "windows") {
-            self.append(&"\n".repeat(50));
-        } else {
-            self.append("\x1b[2J\x1b[1;1H");
-        }
     }
 }
 
@@ -200,7 +172,17 @@ fn generate_snacks(snake: &VecDeque<Cell>, snacks: &mut VecDeque<Cell>) {
 }
 
 fn game_over(op: &mut OutputBuffer, rx: Receiver<Key>, score: usize, config: &Config) {
-    op.append("HAI PERSO.\n");
+    if score as u16 == CELLS - 1 {
+        op.append("\n| |  | |   /\\   |_   _| \\ \\    / /_   _| \\ | |__   __/ __ \\\n");
+        op.append("| |__| |  /  \\    | |    \\ \\  / /  | | |  \\| |  | | | |  | |\n");
+        op.append("|  __  | / /\\ \\   | |     \\ \\/ /   | | | . ` |  | | | |  | |\n");
+        op.append("| |  | |/ ____ \\ _| |_     \\  /   _| |_| |\\  |  | | | |__| |\n");
+        op.append("|_|  |_/_/    \\_\\_____|     \\/   |_____|_| \\_|  |_|  \\____/\n\n");
+        op.append("Ok, lo ammetto, questa scritta fa cagare, ma non mi aspetto che tu vinca mai perciò sto sereno.\n");
+        op.append("Quindi, se stai leggendo, ho fatto una figura di merda.\n\n");
+    } else {
+        op.append("HAI PERSO.\n");
+    }
     op.flush();
     let client = reqwest::Client::new();
     match client

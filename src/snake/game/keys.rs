@@ -1,5 +1,5 @@
 use {
-    crate::clear_screen,
+    game_arcade::clear_screen,
     getch::Getch,
     std::{
         io::{stdin, stdout, Write},

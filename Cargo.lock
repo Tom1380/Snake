@@ -351,7 +351,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "games"
+name = "game_arcade"
 version = "0.1.0"
 dependencies = [
  "colored 1.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
