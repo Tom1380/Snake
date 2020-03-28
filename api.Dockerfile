@@ -5,6 +5,7 @@ COPY requirements.txt .
 RUN python3 -m pip install -r requirements.txt
 COPY api.py /usr/bin
 WORKDIR /
+COPY available_games.json .
 RUN mkdir -p  releases/windows
 RUN mkdir releases/linux
 COPY target/x86_64-pc-windows-gnu/release/launcher.exe /releases/windows

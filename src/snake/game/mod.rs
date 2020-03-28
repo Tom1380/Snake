@@ -222,7 +222,6 @@ fn game_over(op: &mut OutputBuffer, rx: Receiver<Key>, score: usize, config: &Co
             break;
         }
     }
-    clear_screen();
 }
 
 fn wait_after_game_resume() {

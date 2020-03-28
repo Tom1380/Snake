@@ -25,6 +25,10 @@ def db_connection():
             time.sleep(2)
             continue
 
+@app.route('/available_games', methods=['GET'])
+def available_games():
+    with open('/available_games.json', 'r') as available_games:
+        return jsonify(json.loads(available_games.read()))
 
 @app.route('/', methods=['GET'])
 def download_launcher():

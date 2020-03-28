@@ -1,4 +1,5 @@
 *
+!available_games.json
 !render_templates/*
 !requirements.txt
 !api.py
