@@ -52,6 +52,13 @@ def linux_hash():
     with open('/releases/linux/launcher_hash', 'r') as hash:
         return hash.read()
 
+# TODO: Fix this, this is just a hack, we can't rely on the snake table.
+@app.route('/users')
+def users():
+    conn, cur = db_connection()
+    cur.execute('SELECT DISTINCT username FROM scores')
+    return jsonify([row[0] for row in cur.fetchall()])
+
 
 # Snake
 
@@ -111,7 +118,7 @@ def scores_json(difficulty):
     _, cur = db_connection()
     cur.execute(
         "SELECT score, username, date FROM scores WHERE difficulty = %s ORDER BY score DESC, date ASC LIMIT 10", [difficulty])
-    return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 201
+    return jsonify([{'score': row[0], 'username': row[1], 'date': row[2]} for row in cur.fetchall()]), 200
 
 
 @app.route('/snake/scores_table/<difficulty>', methods=['GET'])
