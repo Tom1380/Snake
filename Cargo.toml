@@ -25,8 +25,8 @@ path = "src/forza4/main.rs"
 [dependencies]
 getch = "*"
 rand = "*"
-"dialoguer" = "0.5.0"
+"dialoguer" = "0.10.2"
 "serde_json" = "1.0.44"
-"serde" = "1.0.104"
-"colored" = "1.9.2"
-"reqwest" = "0.9.24"
+"serde" = { version = "1.0.104", features = ["derive"] }
+"colored" = "2.0.0"
+"reqwest" = { version = "0.11.12", features = ["blocking", "json"] }

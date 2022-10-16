@@ -24,7 +24,7 @@ fn main() {
 }
 
 fn downloadable_games() -> HashMap<String, String> {
-    reqwest::get("http://167.172.50.64/available_games")
+    reqwest::blocking::get("http://167.172.50.64/available_games")
         .unwrap()
         .json::<serde_json::Value>()
         .unwrap()
@@ -35,9 +35,7 @@ fn downloadable_games() -> HashMap<String, String> {
         .collect()
 }
 
-fn download_game(name: &String) {
-
-}
+fn download_game(name: &String) {}
 
 fn open_game(name: &String) {
     Command::new(format!("games/{}", name))

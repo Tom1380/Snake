@@ -17,7 +17,7 @@ const ROWS: u8 = 20;
 const COLUMNS: u8 = 20;
 const CELLS: u16 = ROWS as u16 * COLUMNS as u16;
 // How many snacks should be dropped at a time?
-const MAX_SNACKS_DROPPED: usize = CELLS as usize ;
+const MAX_SNACKS_DROPPED: usize = CELLS as usize;
 // Seconds to cross a cell.
 const SPEEDS: &'static [f32] = &[0.2, 0.1, 0.08, 0.05, 0.03];
 
@@ -210,7 +210,7 @@ fn game_over(op: &mut OutputBuffer, score: usize, config: &Config) {
     op.append("HAI PERSO.\n");
     op.flush();
     sleep(Duration::from_secs(2));
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     match client
         .post(&format!(
             "http://167.172.50.64/upload_score/{}/{}/{}",

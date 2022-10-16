@@ -11,7 +11,7 @@ struct Score {
 
 pub fn scores(config: &Config) {
     println!("");
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     match client
         .get(&format!(
             "http://167.172.50.64/snake/scores/{}",
@@ -19,7 +19,7 @@ pub fn scores(config: &Config) {
         ))
         .send()
     {
-        Ok(mut response) => match response.json::<serde_json::Value>() {
+        Ok(response) => match response.json::<serde_json::Value>() {
             Ok(scores) => match scores.as_array() {
                 Some(scores) => print_scores(scores, &config),
                 _ => println!("Qualcosa è andato storto."),

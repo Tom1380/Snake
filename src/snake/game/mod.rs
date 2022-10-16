@@ -184,7 +184,7 @@ fn game_over(op: &mut OutputBuffer, rx: Receiver<Key>, score: usize, config: &Co
         op.append("HAI PERSO.\n");
     }
     op.flush();
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     match client
         .post(&format!(
             "http://167.172.50.64/snake/upload_score/{}/{}/{}",
@@ -194,7 +194,7 @@ fn game_over(op: &mut OutputBuffer, rx: Receiver<Key>, score: usize, config: &Co
         .map(|r| (r.status(), r))
     {
         Ok((reqwest::StatusCode::NO_CONTENT, _)) => println!("Punteggio salvato!"),
-        Ok((reqwest::StatusCode::CREATED, mut response)) => {
+        Ok((reqwest::StatusCode::CREATED, response)) => {
             println!("Punteggio salvato!");
             match response.json::<serde_json::Value>() {
                 Ok(serde_json::Value::Object(json)) => match json.get("beaten") {
