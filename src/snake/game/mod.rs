@@ -87,7 +87,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
     };
     loop {
         op.clear_screen();
-        print_grid(&snake, &snacks, &mut op, &config);
+        print_grid(&snake, &snacks, &direction, &mut op, &config);
         op.flush();
         precise_sleep(sleep_duration);
         if let Ok(key) = rx.try_recv() {
@@ -98,7 +98,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
                 }
                 Key::Pause => {
                     op.clear_screen();
-                    print_grid(&snake, &snacks, &mut op, &config);
+                    print_grid(&snake, &snacks, &direction, &mut op, &config);
                     let _ = rx.recv();
                     op.flush();
                     wait_after_game_resume();
@@ -140,14 +140,23 @@ fn precise_sleep(duration: Duration) {
 fn print_grid(
     snake: &VecDeque<Cell>,
     snacks: &VecDeque<Cell>,
+    direction: &Direction,
     op: &mut OutputBuffer,
     config: &Config,
 ) {
     for y in 0..ROWS {
         for x in 0..COLUMNS {
-            if snake.contains(&Cell { x, y }) {
-                op.append("|+")
-            } else if snacks.contains(&Cell { x, y }) {
+            let current_cell = Cell { x, y };
+
+            if snake.contains(&current_cell) {
+
+                if snake[snake.len() - 1] == current_cell {
+                    op.append(head_character(direction));
+                } else {
+                    op.append("|+")
+                }
+
+            } else if snacks.contains(&current_cell) {
                 op.append("|O");
             } else {
                 op.append("|_");
@@ -163,6 +172,16 @@ fn print_grid(
         )
         .as_str(),
     );
+}
+
+fn head_character(direction: &Direction) -> &'static str {
+    use Direction::*;
+    match direction {
+        Up => "|^",
+        Right => "|>",
+        Down => "|v",
+        Left => "|<",
+    }
 }
 
 fn generate_snacks(snake: &VecDeque<Cell>, snacks: &mut VecDeque<Cell>) {
