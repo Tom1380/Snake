@@ -74,7 +74,7 @@ pub fn play(config: &Config) {
 
 fn game_loop(rx: Receiver<Key>, config: &Config) {
     let sleep_duration = Duration::from_secs_f32(SPEEDS[config.difficulty]);
-    let mut snake = vec![Cell { x: 0, y: 0 }].into_iter().collect();
+    let mut snake = VecDeque::from([Cell { x: 0, y: 0 }]);
     let mut op = OutputBuffer::with_capacity(CELLS as usize + 20);
     let mut snacks = VecDeque::with_capacity(MAX_SNACKS_DROPPED);
     generate_snacks(&snake, &mut snacks);
