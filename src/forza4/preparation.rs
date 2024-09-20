@@ -6,7 +6,7 @@ use {
 fn input(request: &str) -> String {
     let mut input = String::new();
     print!("{}", request);
-    io::stdout().flush();
+    let _ = io::stdout().flush();
     io::stdin()
         .read_line(&mut input)
         .expect("failed to read from stdin");

@@ -9,7 +9,7 @@ use {
         collections::VecDeque,
         io::{stdout, Write},
         sync::mpsc::{channel, Receiver},
-        thread::{sleep, spawn},
+        thread::spawn,
         time::Duration,
     },
 };
