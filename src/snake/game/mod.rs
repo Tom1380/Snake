@@ -89,7 +89,7 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
         op.clear_screen();
         print_grid(&snake, &snacks, &mut op, &config);
         op.flush();
-        sleep(sleep_duration);
+        precise_sleep(sleep_duration);
         if let Ok(key) = rx.try_recv() {
             match key {
                 Key::Arrow(new_direction) => direction = new_direction,
@@ -129,6 +129,12 @@ fn game_loop(rx: Receiver<Key>, config: &Config) {
         }
         snake.push_back(new_head);
     }
+}
+
+/// Uses a busy loop instead of using the `sleep` syscall.
+fn precise_sleep(duration: Duration) {
+    let start = std::time::Instant::now();
+    while start.elapsed() < duration {}
 }
 
 fn print_grid(
@@ -228,11 +234,11 @@ fn wait_after_game_resume() {
     let mut so = stdout();
     print!("RIPARTENZA IN 3");
     so.flush().unwrap();
-    sleep(Duration::from_secs(1));
+    precise_sleep(Duration::from_secs(1));
     print!(", 2");
     so.flush().unwrap();
-    sleep(Duration::from_secs(1));
+    precise_sleep(Duration::from_secs(1));
     print!(", 1");
     so.flush().unwrap();
-    sleep(Duration::from_secs(1));
+    precise_sleep(Duration::from_secs(1));
 }
